@@ -57,7 +57,7 @@ def cleanup(sentence: str) -> list:
 
 
 def get_data(column: str) -> list:
-	df = pd.read_csv('data_file_br_50k.csv', encoding='cp1252')
+	df = pd.read_csv('data_file.csv', encoding='cp1252')
 
 	return df[column]
 
