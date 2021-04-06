@@ -29,7 +29,7 @@ from sentence_transformers import SentenceTransformer
 
 # reads csv data file and returns list of all quotes
 def get_quotes() -> list:
-	df = pd.read_csv('data_file_br_50k.csv', encoding='cp1252')
+	df = pd.read_csv('data_file.csv', encoding='cp1252')
 	return df['quote']
 
 
@@ -64,7 +64,7 @@ def get_data(column: str) -> list:
 def cosine(u, v):
 	return np.dot(u,v) / (np.linalg.norm(u) * np.linalg.norm(v))
 
-def binary_relevance(quotes: list):
+def bert(quotes: list):
 	print('Loading model...')
 
 	model = SentenceTransformer('stsb-distilbert-base')
@@ -92,7 +92,7 @@ def main():
 	
 	print('Retrieved quotes.')
 
-	binary_relevance(quotes)
+	bert(quotes)
 
 
 if __name__ == "__main__":
