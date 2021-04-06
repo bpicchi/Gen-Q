@@ -45,32 +45,32 @@ def json_to_csv_br():
 			except Exception as e:
 				csv_writer.writerow([category, 'error', 'error'])
 
-def json_to_csv():
+def json_to_csv(): 
 	with open('wise_all.json') as json_file:
 		data = json.load(json_file)
 
-	data_file = open('data_file2.csv', 'w')
+	data_file = open('data_file.csv', 'w')
 	csv_writer = csv.writer(data_file)
-	topic_words = data.keys()
+	categories = data.keys()
 
-	csv_writer.writerow(['topic', 'cite', 'quote'])
+	csv_writer.writerow(['category', 'cite', 'quote'])
 
-	for topic in topic_words:
-		for quote_block in data[topic]:
+	for cat in categories:
+		for quote_block in data[cat]:
 			cite = quote_block["cite"]
 			quote = quote_block["quote"]
 			try:
-				csv_writer.writerow([topic, cite, quote])
+				csv_writer.writerow([cat, cite, quote])
 			except Exception as e:
-				csv_writer.writerow([topic, 'error', 'error'])
+				csv_writer.writerow([cat, 'error', 'error'])
 
 	data_file.close()
 
 
 
 def main():
-	# json_to_csv()
-	json_to_csv_br()
+	json_to_csv()
+	# json_to_csv_br()
 
 
 
