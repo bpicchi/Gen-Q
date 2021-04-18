@@ -117,10 +117,10 @@ def kmeans_function(quotes, model, inp) -> bytearray:
     quotes_matrix = []
     quotes2 = []
     quotesToPrint = []
-    for i in range(30000):
+    for i in range(140000):
         quotesToPrint.append(quotes[i])
     quotesToPrint.append(inp)
-    for i in range(30000):
+    for i in range(140000):
         tokenized = tokenize(quotes[i])
         lemmatized = lemmatizeQuotes(tokenized)
         print("lem: ", lemmatized)
@@ -131,7 +131,7 @@ def kmeans_function(quotes, model, inp) -> bytearray:
     quotes2.append(inpLem)
     for q in quotes2:
         # issue with zero index and axis 0 occurs here
-        print(q)
+        if not q: continue
         encoding = model.encode(q)
         quotes_matrix.append(encoding[0])
     #   send quotes to array
@@ -156,11 +156,11 @@ def kmeans_function(quotes, model, inp) -> bytearray:
     print('Silhouette Score: ', bestSilhouette)
     # get prediction of input
     print("**** Now predictions ******")
-    inputClust = predict[30000]
+    inputClust = predict[140000]
     print("Input prediction: " + str(inputClust) + " -- Input: " + str(quotes2[30]))
     i = 0
     for ind, q in enumerate(quotesToPrint):
-        if i == 30000: break
+        if i == 140000: break
         if predict[ind] == inputClust: print(str(predict[ind]) + ": " + str(q))
         i += 1
     return X
@@ -398,8 +398,8 @@ def main():
     # 2) pass the file name (no extension) as 2nd param in storeData and 1st param in loadData
     # 3) MUST USE a different file (or delete the original pkl file) whenever you want
     # to use different sentence encodings (i.e. if you want to up the range from 1000 to 10000)
-    # pklStoreData(X, 'testFile')
-    # pklLoadData('testFile')
+    pklStoreData(X, 'testFile')
+    pklLoadData('testFile')
 
     # inpt = "I am sad today. I also happen to be deeply silly and terrified."
     # cleaned_in = cleanup(inpt)
