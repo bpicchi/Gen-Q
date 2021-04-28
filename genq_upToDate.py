@@ -185,11 +185,11 @@ def cosine(u, v):
 def load_loc_model():
     print('Loading saved encoded quotes...')
     m = np.loadtxt(open('bert_model.csv', 'rb'), delimiter=',').astype("float")
-    print('Encoded quotes loaded.')
+    print('Encoded quotes loaded.\n')
     return m
 
 
-def bert(user_input, quotes: list, m, syns) -> list:
+def bert(num_quotes, user_input, quotes: list, m, syns) -> list:
     print('Loading stsb-distilbert-base model...')
     model = SentenceTransformer('stsb-distilbert-base')
     print('Model loaded.\n')
@@ -209,6 +209,8 @@ def bert(user_input, quotes: list, m, syns) -> list:
 
         np_model = np.array(tmp_model)
         savetxt('bert_model.csv', np_model, delimiter=',')
+
+    print('Performing cosine similarity...')
 
     # calculate cosine similarity between query vector and saved model
     for idx, q in enumerate(quotes):
@@ -234,18 +236,17 @@ def bert(user_input, quotes: list, m, syns) -> list:
 
     to_print = []
 
-    # temporary
-    print('Quotes for ', user_input, ':\n')
     for r in k_res:
-        print(quotes[r[0]])
         to_print.append(quotes[r[0]])
 
-    kmeans_function(k_res, m, model, syns, to_print)
+    print('\nSending top-k quotes to KMeans...\n')
+
+    kmeans_function(num_quotes, k_res, m, model, syns, to_print)
 
     return results_sorted
 
 
-def kmeans_function(results, m, model, inpAndSyns, quotesToPrint):
+def kmeans_function(num_prints, results, m, model, inpAndSyns, quotesToPrint):
     quotes_matrix = []
     quotes2 = []
     # quotesToPrint = []
@@ -270,20 +271,23 @@ def kmeans_function(results, m, model, inpAndSyns, quotesToPrint):
     bestSilhouette = -1
     for i in myRange:
         print("trying range ", i)
-        kmodel = KMeans(n_clusters=i, init='k-means++', max_iter=200, n_init=100, random_state=1)
-        predict = kmodel.fit_predict(X)
-        klabels = kmodel.labels_
-        silhouette_score = metrics.silhouette_score(X, klabels, metric='euclidean')
-        if silhouette_score > bestSilhouette and silhouette_score > 0:
-            bestSilhouette = silhouette_score
-            optNumClusters = i
+        try:
+            kmodel = KMeans(n_clusters=i, init='k-means++', max_iter=200, n_init=100, random_state=1)
+            predict = kmodel.fit_predict(X)
+            klabels = kmodel.labels_
+            silhouette_score = metrics.silhouette_score(X, klabels, metric='euclidean')
+            if silhouette_score > bestSilhouette and silhouette_score > 0:
+                bestSilhouette = silhouette_score
+                optNumClusters = i
+        except:
+            continue
     # get best number of clusters
     kmodel = KMeans(n_clusters=optNumClusters, init='k-means++', max_iter=200, n_init=100, random_state=1)
     predict = kmodel.fit_predict(X)
-    print('**** Silhouette Analysis ****')
+    print('\n**** Silhouette Analysis ****')
     print('Silhouette Score: ', bestSilhouette)
     # get prediction of input
-    print("**** Now predictions ******")
+    print("\n**** Now predictions ******")
     overlaps = []
     for ind, q in enumerate(quotesToPrint):
         if i == numData: break
@@ -303,17 +307,18 @@ def kmeans_function(results, m, model, inpAndSyns, quotesToPrint):
         print("Input prediction: " + str(maxCluster) + " -- Input: " + str(inpAndSyns[0]))
         i = 0
         for ind, q in enumerate(quotesToPrint):
-            if i == numData: break
+            # if i == numData: break
+            if len(finalToPrint) >= num_prints: break
             if predict[ind] == maxCluster:
                 if (str(predict[ind]) + ": " + str(q)) not in finalToPrint:
                     finalToPrint.append(str(predict[ind]) + ": " + str(q))
             i += 1
     else: finalToPrint = quotesToPrint
-    print("***********")
-    for p in finalToPrint: print(p)
+    print("\n***********")
+    for p in finalToPrint: print('-  ' + p)
     print("***********")
 
-
+# return a list of top 10%
 def top_k(results: list) -> list:
     k_results = []
 
@@ -331,16 +336,17 @@ def main():
     # retrieve quotes from data_file.csv
     print('Retrieving quotes...')
     quotes = get_data('quote')
-    print('Retrieved quotes.')
+    print('Retrieved quotes.\n')
 
     start_t = time.perf_counter()
     m = load_loc_model()
     stop_t = time.perf_counter()
     load_t = (stop_t - start_t) / 60
-    print('Time to load saved model:', load_t)
+    print('Time to load saved model:', load_t, '\n')
 
     while (True):
-        user_input = input('input: ')
+        user_input = input('Input: ')
+        num_quotes = int(input('Num. of quotes: '))
 
         if user_input == '-1':
             break
@@ -352,7 +358,8 @@ def main():
         syns = get_synonyms(user_input, cleaned_input)
         syns.insert(0, user_input)
 
-        cs = bert(user_input, quotes, m, syns)
+        # call bert and kmeans
+        cs = bert(num_quotes, user_input, quotes, m, syns)
         print('==================================\n')
 
 
